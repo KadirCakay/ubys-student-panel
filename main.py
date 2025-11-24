@@ -4,6 +4,7 @@ import json
 import os
 import webbrowser  # Linkleri tarayıcıda açmak için
 from ubys_api import UbysClient
+from tkinter import filedialog
 
 # --- AYARLAR ---
 ctk.set_appearance_mode("Dark")
@@ -219,11 +220,25 @@ class App(ctk.CTk):
         webbrowser.open(url)
 
     def indir_baslat(self, url, ad):
-        threading.Thread(target=self.indir_thread, args=(url, ad)).start()
+        # Kullanıcıya nereye kaydetmek istediğini sor
+        hedef_klasor = filedialog.askdirectory(title="Kaydedilecek Klasörü Seçin")
 
-    def indir_thread(self, url, ad):
-        self.bot.dosya_indir(url, ad)
-        print("İndirme tamamlandı")
+        # Eğer kullanıcı "İptal" derse veya pencereyi kapatırsa işlem yapma
+        if not hedef_klasor:
+            return
+
+        # Seçilen klasörü thread'e gönder
+        threading.Thread(target=self.indir_thread, args=(url, ad, hedef_klasor)).start()
+
+    def indir_thread(self, url, ad, klasor):
+        # API'ye klasör bilgisini de gönderiyoruz
+        basarili, yol = self.bot.dosya_indir(url, ad, klasor)
+
+        if basarili:
+            print(f"İndirme tamamlandı: {yol}")
+            # İstersen burada kullanıcıya "Bitti" diye minik bir bildirim gösterebilirsin.
+        else:
+            print(f"İndirme başarısız: {yol}")
 
     def cikis_yap(self):
         self.show_login_screen()

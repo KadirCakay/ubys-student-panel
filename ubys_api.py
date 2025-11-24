@@ -200,40 +200,37 @@ class UbysClient:
             print(f"Detay hatası: {e}")
             return []
 
-    def dosya_indir(self, url, dosya_adi):
-        """Dosyayı 'İndirilenler' klasörüne indirir. Headers manipülasyonu yapar."""
+    def dosya_indir(self, url, dosya_adi, hedef_klasor=None):
+        """Dosyayı belirtilen klasöre indirir. Klasör verilmezse İndirilenler'e kaydeder."""
         try:
-            download_folder = os.path.expanduser("~/Downloads")
+            # Eğer özel bir klasör seçildiyse orayı kullan, yoksa İndirilenler'i
+            if hedef_klasor:
+                download_folder = hedef_klasor
+            else:
+                download_folder = os.path.expanduser("~/Downloads")
 
             # Dosya adındaki geçersiz karakterleri temizle
             dosya_adi = "".join([c for c in dosya_adi if c.isalnum() or c in " .-_"]).strip()
             file_path = os.path.join(download_folder, dosya_adi)
 
-            # Uzantı yoksa .pdf ekle (Varsayılan)
             if not os.path.splitext(file_path)[1]:
                 file_path += ".pdf"
 
-            # --- DÜZELTME: Header Manipülasyonu ---
-            # İndirme yaparken "Bot" değil "Tarayıcı" gibi görünmeliyiz.
-            # X-Requested-With başlığını kaldırıyoruz!
+            # Header Manipülasyonu (Burası aynı kalıyor)
             download_headers = self.headers.copy()
             if "X-Requested-With" in download_headers:
                 del download_headers["X-Requested-With"]
 
-            # Tarayıcı gibi davranan başlıklar ekle
             download_headers["Referer"] = "https://ubys.bartin.edu.tr/"
             download_headers[
                 "Accept"] = "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8"
             download_headers["Upgrade-Insecure-Requests"] = "1"
 
-            print(f"İndirme Başlıyor: {url}")
+            print(f"İndirme Başlıyor: {url} -> {file_path}")
 
             with self.session.get(url, stream=True, headers=download_headers) as r:
-
-                # HTML gelirse hata ver (Login'e düşmüşüz demektir)
                 content_type = r.headers.get("Content-Type", "").lower()
                 if "html" in content_type:
-                    print(f"HATA: Sunucu dosya yerine HTML gönderdi. Tür: {content_type}")
                     return False, "Sunucu İzin Vermedi (HTML)"
 
                 r.raise_for_status()
