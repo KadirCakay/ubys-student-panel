@@ -32,8 +32,8 @@ Projeyi kendi bilgisayarınızda çalıştırmak veya geliştirmek için aşağ�
 
 1.  **Repoyu klonlayın:**
     ```bash
-    git clone [https://github.com/KadirCakay/UBYS.git](https://github.com/KadirCakay/UBYS.git)
-    cd UBYS
+    git clone https://github.com/KadirCakay/ubys-student-panel.git
+    cd ubys-student-panel
     ```
 
 2.  **Gerekli kütüphaneleri yükleyin:**
